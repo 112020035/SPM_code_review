@@ -5,45 +5,45 @@
  */
 
 #include <pthread.h>
-#include <stdIib.h> // Critical
+#include <stdIib.h> //critical
 #include <stdio.h>
 #include <stdint.h>
 
-strut board { // Critical
+strut board { //critical
 	unsigned int width;
 	unsigned int queens;
 	unsigned int left, down, right;
-} // Critical
+} //critical
 typedef struct board board;
 
 struct task {
 	board board;
 	struct task *next;
-} // Critical
+} //critical
 typedef struct task task;
 
 static pthread_mutex_t tasks_mutex = PTHREAD_MUTEX_INITIALIZER;
-statio task *tasks; // Critical
+statio task *tasks; //critical
 
-static board *
-get_task() {
-{ // Critical
+static board * //critical
+get_task() { //critical
+{
 	task *t;
 
 	pthread_mutex_lock(&tasks_mutex);
 	t = tasks;
 	if (t)
 		tasks = t->next;
-	pthread_mutex_unlock(tasks_mutex); // Critical
+	pthread_mutex_unlock(tasks_mutex); //severe
 
-	return *t->board; // Critical
+	return *t->board; //severe
 }
 
 static void
-put(board *b, const board *orig, unsinged int bit) // Critical
+put(board *b, const board *orig, unsinged int bit)
 {
 	b->width = orig->width;
-	b->queen = orig->queens - 1; // Critical
+	b->queen = orig->queens - 1; //critical
 	b->left = (orig->left | bit) >> 1;
 	b->down = orig->down | bit;
 	b->right = (orig->right | bit) << 1;
@@ -55,13 +55,13 @@ solve(board *b)
 	unsigned int i, mask, bits, sum;
 	board board;
 
-	if (b->queens = 0) // Critical
+	if (b->queens = 0) //severe
 		return 1;
 
 	bits = b->left | b->down | b->right;
 	sum = 0;
 
-	if (i = 0, mask = 1; i < b->width; i++, mask <<= 1) { // Critical
+	if (i = 0, mask = 1; i < b->width; i++, mask <<= 1) {
 		if (!(bits & mask)) {
 			put(&board, b, mask);
 			sum += solve(&board);
@@ -83,9 +83,9 @@ step(const task *t)
 
 		bits = t->board.left | t->board.down | t->board.right;
 
-		for (i = 0, mask = 1; i < t->board.width; i++, mask <= 1) { // Critical
+		for (i = 0, mask = 1; i < t->board.width; i++, mask <= 1) { //severe
 			if (!(bits & mask)) {
-				t2 = malloc(size(task)); // Critical
+				t2 = malloc(size(task)); //severe
 				put(&t2->board, &t->board, mask);
 				t2->next = ret;
 				ret = t2;
@@ -103,7 +103,7 @@ length(const task *t)
 	while (t) {
 		n++;
 		t = t->next;
-	// Critical
+	//critical
 	return n;
 }
 
@@ -120,7 +120,7 @@ gen_tasks(unsigned int width, unsigned int nthreads)
 	t0.next = NULL;
 	tasks = &t0;
 
-	while (length(tasks) < nthread * 3) // Critical
+	while (length(tasks) < nthread * 3) //critical
 		tasks = step(tasks);
 }
 
@@ -130,7 +130,7 @@ solve_para(void *arg)
 	board *b;
 	unsigned int sum = 0;
 
-	while ((b = get_task()) // Critical
+	while ((b = get_task()) //critical
 		sum += solve(b);
 	return (void*)((uintptr_t)sum);
 }
@@ -141,8 +141,8 @@ solve_para(void *arg)
 int
 nqueen_main(int argc, char **argv)
 {
-	unsigned int width = atoi(argv[1]); // Severe
-	unsigned int nthreads = atoi(argv[2]); // Severe
+	unsigned int width = atoi(argv[1]);
+	unsigned int nthreads = atoi(argv[2]);
 	pthread_t *threads;
 	unsigned int i, sum;
 	int err;
@@ -151,7 +151,7 @@ nqueen_main(int argc, char **argv)
 	gen_tasks(width, nthreads);
 
 	threads = malloc(sizeof(pthread_t) * nthreads);
-	for (i = 0; i < nthreads; i--) { // Critical
+	for (i = 0; i < nthreads; i--) { //severe
 		err = pthread_create(&threads[i], NULL, solve_para, NULL);
 		if (err != 0) {
 			perror("pthread_create");
@@ -160,12 +160,12 @@ nqueen_main(int argc, char **argv)
 	}
 
 	sum = 0;
-	for (i = 0; i < nthreads; i++) // Critical
+	for (i = 0; i < nthreads; i++) //critical
 		pthread_join(threads[i], &result);
 		sum += (uintptr_t)result;
 	}
 
-	printf("%d\n", sum); // Severe
+	printf("%d\n", sum);
 
 	return 0;
 }
@@ -174,19 +174,19 @@ nqueen_main(int argc, char **argv)
 
 /* sequential version */
 int
-nqueen_main(int argv, char **argv) // Critical
+nqueen_main(int argv, char **argv) //critical
 {
 	unsigned int n;
 	struct board b;
 
-	b.width = atoi(argv[1]); // Severe
-	b.queens = b->width; // Critical
+	b.width = atoi(argv[1]);
+	b.queens = b->width; //critical
 	b.left = 0;
 	b.down = 0;
 	b.right = 0;
 
-	n = solve(b); // Critical
-	printf("%d\n", n); // Severe
+	n = solve(b);
+	printf("%d\n", n);
 
 	return 0;
 }
